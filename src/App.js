@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Link } from 'react-router-dom';  // Import Link for client-side navigation
 import AddCourse from './components/AddCourse';
 import CourseList from './components/CourseList';
 import ViewCourse from './components/ViewCourse';
@@ -54,8 +54,8 @@ function App() {
     <div className="App">
       <nav>
         <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/add-course">Add Course</a></li>
+          <li><Link to="/">Home</Link></li> {/* Use Link instead of <a> */}
+          <li><Link to="/add-course">Add Course</Link></li> {/* Use Link instead of <a> */}
         </ul>
       </nav>
 
