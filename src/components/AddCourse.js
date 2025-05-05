@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
+const API_BASE = "https://sky-pineapple-trumpet.glitch.me";
+
 function AddCourse({ onCourseCreated }) {
-  const [title, setTitle] = useState('');
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [subject, setSubject] = useState('');
+  const [subjectArea, setSubjectArea] = useState('');
   const [credits, setCredits] = useState('');
   const [teacher, setTeacher] = useState('');
   const navigate = useNavigate();
@@ -13,15 +16,15 @@ function AddCourse({ onCourseCreated }) {
     e.preventDefault();
 
     const newCourse = {
-      title,
+      name,
       description,
-      subject,
-      credits,
+      subjectArea,
+      credits: Number(credits),
       teacher,
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/courses', {
+      const response = await fetch(`${API_BASE}/api/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCourse),
@@ -32,13 +35,12 @@ function AddCourse({ onCourseCreated }) {
       const createdCourse = await response.json();
       onCourseCreated(createdCourse);
 
-      setTitle('');
+      // Reset form
+      setName('');
       setDescription('');
-      setSubject('');
+      setSubjectArea('');
       setCredits('');
       setTeacher('');
-
-      navigate('/');
     } catch (error) {
       console.error('Error adding course:', error);
       alert('There was an error adding the course');
@@ -49,11 +51,11 @@ function AddCourse({ onCourseCreated }) {
     <div className="add-course-container">
       <h2 className="course-list-title">Add a New Course</h2>
       <form className="add-course-form" onSubmit={handleSubmit}>
-        <label>Course Title</label>
+        <label>Course Name</label>
         <input
           type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           required
         />
 
@@ -64,11 +66,11 @@ function AddCourse({ onCourseCreated }) {
           required
         />
 
-        <label>Subject</label>
+        <label>Subject Area</label>
         <input
           type="text"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
+          value={subjectArea}
+          onChange={(e) => setSubjectArea(e.target.value)}
           required
         />
 
