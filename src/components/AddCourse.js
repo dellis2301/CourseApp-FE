@@ -14,38 +14,41 @@ function AddCourse({ onCourseCreated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const newCourse = {
       name,
       description,
       subjectArea,
-      credits: Number(credits),
+      credits,
       teacher,
     };
-
+  
     try {
       const response = await fetch(`${API_BASE}/api/courses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCourse),
       });
-
+  
       if (!response.ok) throw new Error('Failed to add course');
-
+  
       const createdCourse = await response.json();
       onCourseCreated(createdCourse);
-
-      // Reset form
+  
       setName('');
       setDescription('');
       setSubjectArea('');
       setCredits('');
       setTeacher('');
+  
+      navigate('/');
     } catch (error) {
       console.error('Error adding course:', error);
       alert('There was an error adding the course');
     }
   };
+  
+  
 
   return (
     <div className="add-course-container">
@@ -97,3 +100,4 @@ function AddCourse({ onCourseCreated }) {
 }
 
 export default AddCourse;
+
