@@ -1,5 +1,3 @@
-// src/components/CourseList.js
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -18,9 +16,9 @@ function CourseList({ courses, onDelete }) {
       <ul className="course-list">
         {courses.map((course) => (
           <li key={course._id} className="course-item">
-            <h3 className="course-title">{course.title}</h3>
+            <h3 className="course-title">{course.name}</h3>
             <p className="course-description">{course.description}</p>
-            <p><strong>Subject:</strong> {course.subject}</p>
+            <p><strong>Subject:</strong> {course.subjectArea}</p>
             <p><strong>Credits:</strong> {course.credits}</p>
             <p><strong>Teacher:</strong> {course.teacher}</p>
             <div className="course-actions">
