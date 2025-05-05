@@ -1,13 +1,15 @@
-// src/components/EditCourse.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+
+
+const API_BASE = "https://sky-pineapple-trumpet.glitch.me";
 
 function EditCourse() {
   const { id } = useParams();
   const [course, setCourse] = useState({
-    title: '',
+    name: '',
     description: '',
-    subject: '',
+    subjectArea: '',
     credits: '',
     teacher: '',
   });
@@ -18,15 +20,13 @@ function EditCourse() {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/courses/${id}`);
-        if (!response.ok) {
-          throw new Error('Course not found');
-        }
+        const response = await fetch(`${API_BASE}/api/courses/${id}`);
+        if (!response.ok) throw new Error('Course not found');
         const data = await response.json();
         setCourse(data);
       } catch (error) {
         setError(error.message);
-        navigate('/'); // Redirect to courses list if an error occurs
+        navigate('/');
       } finally {
         setLoading(false);
       }
@@ -39,44 +39,38 @@ function EditCourse() {
     e.preventDefault();
 
     try {
-      // Send PUT request to update the course
-      const response = await fetch(`http://localhost:5000/api/courses/${id}`, {
+      const updatedCourse = {
+        ...course,
+        credits: Number(course.credits),
+      };
+
+      const response = await fetch(`${API_BASE}/api/courses/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(course),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedCourse),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update course');
-      }
+      if (!response.ok) throw new Error('Failed to update course');
 
-      // After successful update, navigate to the course list
       navigate('/');
     } catch (error) {
       setError('There was an error updating the course');
     }
   };
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (error) {
-    return <p>{error}</p>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div className="edit-course-container">
       <h2>Edit Course</h2>
       <form onSubmit={handleSubmit} className="add-course-form">
         <div>
-          <label>Course Title</label>
+          <label>Course Name</label>
           <input
             type="text"
-            value={course.title}
-            onChange={(e) => setCourse({ ...course, title: e.target.value })}
+            value={course.name}
+            onChange={(e) => setCourse({ ...course, name: e.target.value })}
             required
           />
         </div>
@@ -89,11 +83,11 @@ function EditCourse() {
           />
         </div>
         <div>
-          <label>Subject</label>
+          <label>Subject Area</label>
           <input
             type="text"
-            value={course.subject}
-            onChange={(e) => setCourse({ ...course, subject: e.target.value })}
+            value={course.subjectArea}
+            onChange={(e) => setCourse({ ...course, subjectArea: e.target.value })}
             required
           />
         </div>
@@ -119,6 +113,7 @@ function EditCourse() {
       </form>
     </div>
   );
-  
 }
+
 export default EditCourse;
+
