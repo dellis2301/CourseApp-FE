@@ -4,21 +4,55 @@ import AddCourse from './components/AddCourse';
 import CourseList from './components/CourseList';
 import ViewCourse from './components/ViewCourse';
 import EditCourse from './components/EditCourse';
+import Login from './components/Login';
+import Register from './components/Register';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
-
 
 const API_BASE = "https://sky-pineapple-trumpet.glitch.me";
 
 function App() {
   const [courses, setCourses] = useState([]);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
+  // Load token and decode user info
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        setUser({
+          username: decoded.username,
+          role: decoded.role,
+        });
+      } catch (err) {
+        console.error('Invalid token');
+        localStorage.removeItem('token');
+      }
+    }
+  }, []);
+
+  // Fetch courses with the token in the headers
   useEffect(() => {
     const fetchCourses = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
       try {
-        const response = await fetch(`${API_BASE}/api/courses`);
-        const data = await response.json();
-        setCourses(data);
+        const res = await fetch(`${API_BASE}/api/courses`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (res.status === 401) {
+          console.warn('Unauthorized access to courses');
+          return;
+        }
+
+        const data = await res.json();
+        setCourses(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Failed to fetch courses:', err);
       }
@@ -27,6 +61,7 @@ function App() {
     fetchCourses();
   }, []);
 
+  // Handle course actions (create, update, delete)
   const handleCourseCreated = (newCourse) => {
     setCourses(prev => [...prev, newCourse]);
     navigate('/');
@@ -41,12 +76,40 @@ function App() {
   };
 
   const handleCourseDeleted = async (id) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
     try {
-      await fetch(`${API_BASE}/api/courses/${id}`, { method: 'DELETE' });
-      setCourses(prev => prev.filter(course => course._id !== id));
+      const res = await fetch(`${API_BASE}/api/courses/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (res.status === 401) {
+        alert('Unauthorized. Please log in as a teacher.');
+        return;
+      }
+
+      if (res.ok) {
+        setCourses(prev => prev.filter(course => course._id !== id));
+      } else {
+        console.error('Failed to delete course');
+      }
     } catch (err) {
-      console.error('Failed to delete course:', err);
+      console.error('Error deleting course:', err);
     }
+  };
+
+  // Authentication helpers
+  const isAuthenticated = () => !!user;
+  const getUserRole = () => user?.role || null;
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/');
   };
 
   return (
@@ -54,15 +117,43 @@ function App() {
       <nav>
         <ul>
           <li><Link to="/">Home</Link></li>
-          <li><Link to="/add-course">Add Course</Link></li>
+          {isAuthenticated() && getUserRole() === 'teacher' && (
+            <li><Link to="/add-course">Add Course</Link></li>
+          )}
+          {!isAuthenticated() && <li><Link to="/login">Login</Link></li>}
+          {!isAuthenticated() && <li><Link to="/register">Register</Link></li>}
+          {isAuthenticated() && (
+            <li><button onClick={handleLogout}>Logout</button></li>
+          )}
         </ul>
       </nav>
 
       <Routes>
-        <Route path="/" element={<CourseList courses={courses} onDelete={handleCourseDeleted} />} />
-        <Route path="/add-course" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
+        <Route
+          path="/"
+          element={<CourseList courses={courses} onDelete={handleCourseDeleted} />}
+        />
+        <Route
+          path="/add-course"
+          element={
+            <ProtectedRoute
+              element={<AddCourse onCourseCreated={handleCourseCreated} />}
+              roleRequired="teacher"
+            />
+          }
+        />
+        <Route
+          path="/edit-course/:id"
+          element={
+            <ProtectedRoute
+              element={<EditCourse courses={courses} onCourseUpdated={handleCourseUpdated} />}
+              roleRequired="teacher"
+            />
+          }
+        />
         <Route path="/view-course/:id" element={<ViewCourse courses={courses} />} />
-        <Route path="/edit-course/:id" element={<EditCourse courses={courses} onCourseUpdated={handleCourseUpdated} />} />
+        <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </div>
   );
