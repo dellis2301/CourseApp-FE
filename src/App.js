@@ -35,31 +35,38 @@ function App() {
 
   // Fetch courses with the token in the headers
   useEffect(() => {
-    const fetchCourses = async () => {
+  const fetchCourses = async () => {
+    try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      const res = await fetch(`${API_BASE}/api/courses`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      try {
-        const res = await fetch(`${API_BASE}/api/courses`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (res.status === 401) {
-          console.warn('Unauthorized access to courses');
-          return;
-        }
-
-        const data = await res.json();
-        setCourses(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error('Failed to fetch courses:', err);
+      if (!res.ok) {
+        const error = await res.json();
+        console.warn('Course fetch failed:', error);
+        setCourses([]); // fallback to empty array
+        return;
       }
-    };
 
-    fetchCourses();
-  }, []);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setCourses(data);
+      } else {
+        setCourses([]); // fallback
+        console.warn('Unexpected response:', data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch courses:', err);
+      setCourses([]);
+    }
+  };
+
+  fetchCourses();
+}, []);
+
 
   // Handle course actions (create, update, delete)
   const handleCourseCreated = (newCourse) => {
