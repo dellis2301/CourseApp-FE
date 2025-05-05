@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
+
+const API_BASE = "https://sky-pineapple-trumpet.glitch.me";
+
 function ViewCourse() {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
@@ -11,7 +14,7 @@ function ViewCourse() {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/courses/${id}`);
+        const response = await fetch(`${API_BASE}/api/courses/${id}`);
         if (!response.ok) {
           throw new Error('Course not found');
         }
@@ -19,7 +22,7 @@ function ViewCourse() {
         setCourse(data);
       } catch (error) {
         setError(error.message);
-        navigate('/'); // Redirect to courses list if an error occurs
+        navigate('/');
       } finally {
         setLoading(false);
       }
@@ -30,7 +33,7 @@ function ViewCourse() {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/courses/${id}`, {
+      const response = await fetch(`${API_BASE}/api/courses/${id}`, {
         method: 'DELETE',
       });
 
@@ -38,7 +41,7 @@ function ViewCourse() {
         throw new Error('Failed to delete course');
       }
 
-      navigate('/'); // After deletion, go back to the course list
+      navigate('/');
     } catch (error) {
       alert('There was an error deleting the course');
     }
@@ -50,9 +53,9 @@ function ViewCourse() {
   return (
     <div className="view-course-container">
       <div className="view-course-card">
-        <h2 className="course-title">{course.title}</h2>
+        <h2 className="course-title">{course.name}</h2>
         <p><strong>Description:</strong> {course.description}</p>
-        <p><strong>Subject:</strong> {course.subject}</p>
+        <p><strong>Subject:</strong> {course.subjectArea}</p>
         <p><strong>Credits:</strong> {course.credits}</p>
         <p><strong>Teacher:</strong> {course.teacher}</p>
 
@@ -66,5 +69,7 @@ function ViewCourse() {
 }
 
 export default ViewCourse;
+
+
 
 
