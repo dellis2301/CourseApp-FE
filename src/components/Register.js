@@ -1,34 +1,46 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = "https://sky-pineapple-trumpet.glitch.me"; // Replace with your Glitch URL
+const API_BASE = "https://sky-pineapple-trumpet.glitch.me"; // Add your API base URL
 
-function Register() {
-  const [username, setUsername] = useState('');
+const Register = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('student'); // Default to student
+  const [role, setRole] = useState('student'); // Default to student, or handle accordingly
+  const [error, setError] = useState(''); // Initialize error state
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const registerData = { username, password, role };
+    // Ensure all fields are being passed correctly
+    if (!email || !password || !role) {
+      setError('All fields are required');
+      return;
+    }
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registerData),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, role }), // Ensure this is correctly passed
       });
 
       if (!response.ok) {
-        throw new Error('Registration failed');
+        const data = await response.json();
+        setError(data.error || 'Something went wrong');
+        return;
       }
 
-      navigate('/login'); // Redirect to login page after successful registration
+      const data = await response.json();
+      localStorage.setItem('token', data.token); // Store the token
+      // You can also save user details here if needed
+      navigate('/'); // Redirect to home or another protected route
     } catch (err) {
-      console.error(err);
-      alert('Registration failed');
+      console.error('Registration failed:', err);
+      setError('Something went wrong');
     }
   };
 
@@ -36,28 +48,39 @@ function Register() {
     <div>
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-          required
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-        />
-        <select value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="student">Student</option>
-          <option value="teacher">Teacher</option>
-        </select>
+        <div>
+          <label>Email:</label>
+          <input
+            type="text"
+            value={email} // Use email here, not username
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Password:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Role:</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          >
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </div>
+        {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
         <button type="submit">Register</button>
       </form>
     </div>
   );
-}
+};
 
 export default Register;
