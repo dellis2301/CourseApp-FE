@@ -2,6 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 function CourseList({ courses, onDelete }) {
+  if (!Array.isArray(courses)) {
+    return (
+      <div className="course-list-container">
+        <p>Error loading courses. Please make sure you're logged in.</p>
+      </div>
+    );
+  }
+
   if (courses.length === 0) {
     return (
       <div className="course-list-container">
@@ -23,7 +31,7 @@ function CourseList({ courses, onDelete }) {
             <p><strong>Teacher:</strong> {course.teacher}</p>
             <div className="course-actions">
               <Link to={`/view-course/${course._id}`} className="view-link">View Details</Link> | 
-              <Link to={`/edit-course/${course._id}`} className="edit-link"> Edit</Link> | 
+              <Link to={`/edit-course/${course._id}`} className="edit-link">Edit</Link> | 
               <button onClick={() => onDelete(course._id)} className="delete-btn">Delete</button>
             </div>
           </li>
