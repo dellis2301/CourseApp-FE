@@ -1,43 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = "https://sky-pineapple-trumpet.glitch.me"; // Add your API base URL
+const API_BASE = 'https://sky-pineapple-trumpet.glitch.me';
 
 const Register = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('student'); // Default to student, or handle accordingly
-  const [error, setError] = useState(''); // Initialize error state
+  const [role, setRole] = useState('student');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Ensure all fields are being passed correctly
-    if (!email || !password || !role) {
-      setError('All fields are required');
-      return;
-    }
-
     try {
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, role }), // Ensure this is correctly passed
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password, role }),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        setError(data.error || 'Something went wrong');
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Registration failed');
         return;
       }
 
-      const data = await response.json();
-      localStorage.setItem('token', data.token); // Store the token
-      // You can also save user details here if needed
-      navigate('/'); // Redirect to home or another protected route
+      localStorage.setItem('token', data.token);
+      navigate('/login'); // Or auto-login here if needed
     } catch (err) {
       console.error('Registration failed:', err);
       setError('Something went wrong');
@@ -49,10 +40,19 @@ const Register = () => {
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Email:</label>
+          <label>Username:</label>
           <input
             type="text"
-            value={email} // Use email here, not username
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Email:</label>
+          <input
+            type="email"
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
@@ -68,15 +68,12 @@ const Register = () => {
         </div>
         <div>
           <label>Role:</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
+          <select value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="student">Student</option>
             <option value="teacher">Teacher</option>
           </select>
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message */}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
         <button type="submit">Register</button>
       </form>
     </div>
@@ -84,3 +81,4 @@ const Register = () => {
 };
 
 export default Register;
+
