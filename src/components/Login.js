@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = "https://sky-pineapple-trumpet.glitch.me"; // Replace with your Glitch URL
+const API_BASE = process.env.REACT_APP_API_BASE || "https://sky-pineapple-trumpet.glitch.me";
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
 
     const loginData = { username, password };
 
@@ -20,16 +24,20 @@ function Login() {
         body: JSON.stringify(loginData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Invalid login');
+        setError(data.error || 'Invalid login');
+        return;
       }
 
-      const data = await response.json();
-      localStorage.setItem('token', data.token); // Store token in localStorage
+      localStorage.setItem('token', data.token);
       navigate('/'); // Redirect to home or dashboard
     } catch (err) {
-      console.error(err);
-      alert('Login failed');
+      console.error('Login failed:', err);
+      setError('Something went wrong. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,7 +59,10 @@ function Login() {
           placeholder="Password"
           required
         />
-        <button type="submit">Login</button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <button type="submit" disabled={loading}>
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
       </form>
     </div>
   );

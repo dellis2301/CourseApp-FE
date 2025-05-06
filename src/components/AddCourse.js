@@ -100,13 +100,3 @@ function AddCourse({ onCourseCreated }) {
 }
 
 export default AddCourse;
-
-
-        <button type="submit">Add Course</button>
-      </form>
-    </div>
-  );
-}
-
-export default AddCourse;
-

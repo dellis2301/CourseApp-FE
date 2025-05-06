@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 function CourseList({ courses = [], onDelete }) {
+  // Handle cases where `courses` is not an array or fails to load properly
   const isLoggedOut = !Array.isArray(courses);
 
   return (
@@ -39,4 +40,3 @@ function CourseList({ courses = [], onDelete }) {
 }
 
 export default CourseList;
-
