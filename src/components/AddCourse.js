@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-
-const API_BASE = "https://sky-pineapple-trumpet.glitch.me";
+const API_BASE = process.env.REACT_APP_API_BASE || "https://sky-pineapple-trumpet.glitch.me";
 
 function AddCourse({ onCourseCreated }) {
   const [name, setName] = useState('');
@@ -10,11 +9,16 @@ function AddCourse({ onCourseCreated }) {
   const [subjectArea, setSubjectArea] = useState('');
   const [credits, setCredits] = useState('');
   const [teacher, setTeacher] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    setLoading(true);
+    setError('');
+
     const newCourse = {
       name,
       description,
@@ -22,38 +26,53 @@ function AddCourse({ onCourseCreated }) {
       credits,
       teacher,
     };
-  
+
     try {
+      const token = localStorage.getItem('token');  // Check if the user is logged in
+      if (!token) {
+        setError('You must be logged in to add a course');
+        navigate('/login');  // Redirect to login if no token
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/api/courses`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,  // Pass token in the Authorization header
+        },
         body: JSON.stringify(newCourse),
       });
-  
-      if (!response.ok) throw new Error('Failed to add course');
-  
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.error || 'Failed to add course');
+        return;
+      }
+
       const createdCourse = await response.json();
-      onCourseCreated(createdCourse);
-  
+      onCourseCreated(createdCourse);  // Pass newly created course to parent
       setName('');
       setDescription('');
       setSubjectArea('');
       setCredits('');
       setTeacher('');
-  
-      navigate('/');
+
+      navigate('/');  // Redirect to course list after adding the course
     } catch (error) {
       console.error('Error adding course:', error);
-      alert('There was an error adding the course');
+      setError('There was an error adding the course');
+    } finally {
+      setLoading(false);
     }
   };
-  
-  
 
   return (
     <div className="add-course-container">
       <h2 className="course-list-title">Add a New Course</h2>
       <form className="add-course-form" onSubmit={handleSubmit}>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+
         <label>Course Name</label>
         <input
           type="text"
@@ -93,7 +112,9 @@ function AddCourse({ onCourseCreated }) {
           required
         />
 
-        <button type="submit">Add Course</button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Adding Course...' : 'Add Course'}
+        </button>
       </form>
     </div>
   );
