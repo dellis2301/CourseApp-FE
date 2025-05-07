@@ -14,8 +14,6 @@ const API_BASE = process.env.REACT_APP_API_BASE || "https://sky-pineapple-trumpe
 function App() {
   const [courses, setCourses] = useState([]);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);  // New state for loading
-  const [error, setError] = useState(null);      // New state for error
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,14 +41,10 @@ function App() {
 
   useEffect(() => {
     const fetchCourses = async () => {
-      setLoading(true);    // Set loading to true when fetching starts
-      setError(null);      // Reset error state
-
       try {
         const token = localStorage.getItem('token');
         if (!token) {
           setCourses([]);
-          setLoading(false);  // Set loading to false after the fetch completes
           return;
         }
 
@@ -62,25 +56,19 @@ function App() {
           const error = await res.json();
           console.warn('Course fetch failed:', error);
           setCourses([]);
-          setLoading(false);  // Set loading to false after the fetch completes
-          setError('Failed to load courses');
           return;
         }
 
         const data = await res.json();
-        console.log('Fetched courses:', data);
         setCourses(Array.isArray(data) ? data : []);
-        setLoading(false);  // Set loading to false after the fetch completes
       } catch (err) {
         console.error('Failed to fetch courses:', err);
         setCourses([]);
-        setLoading(false);  // Set loading to false after the fetch completes
-        setError('Error fetching courses');
       }
     };
 
     fetchCourses();
-  }, []); // Empty dependency array means this runs once when the component mounts
+  }, []);
 
   const handleCourseCreated = (newCourse) => {
     setCourses((prev) => [...prev, newCourse]);
@@ -151,10 +139,6 @@ function App() {
         </ul>
       </nav>
 
-      {/* Display loading or error message */}
-      {loading && <p>Loading courses...</p>}
-      {error && <p>{error}</p>}
-
       <Routes>
         <Route
           path="/"
@@ -162,6 +146,7 @@ function App() {
             <CourseList
               courses={courses}
               onDelete={isTeacher() ? handleCourseDeleted : null}
+              isTeacher={isTeacher()}  // Pass isTeacher prop to CourseList
             />
           }
         />
