@@ -32,7 +32,7 @@ function App() {
           username: decoded.username,
           role: decoded.role,
         });
-        console.log("Logged in user:", decoded);
+        console.log("user:",);
 
       } catch (err) {
         console.error('Invalid token:', err);
