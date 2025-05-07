@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const API_BASE = process.env.REACT_APP_API_BASE || "https://sky-pineapple-trumpet.glitch.me";
 
 function Login() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -15,7 +15,7 @@ function Login() {
     setLoading(true);
     setError('');
 
-    const loginData = { username, password };
+    const loginData = { email, password };
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/login`, {
@@ -24,9 +24,6 @@ function Login() {
         body: JSON.stringify(loginData),
       });
 
-      
-  
-
       const data = await response.json();
 
       if (!response.ok) {
@@ -34,22 +31,16 @@ function Login() {
         return;
       }
 
-      // Save token to localStorage
       localStorage.setItem('token', data.token);
 
-
-      // Decode the token to get user role
       const decoded = JSON.parse(atob(data.token.split('.')[1]));
       const userRole = decoded.role;
-
-      // Save role to localStorage
       localStorage.setItem('role', userRole);
 
-      // Redirect based on role
       if (userRole === 'teacher') {
-        navigate('/');  // Redirect to teacher dashboard or home
+        navigate('/');
       } else if (userRole === 'student') {
-        navigate('/student-dashboard');  // Redirect to student dashboard (or other page)
+        navigate('/student-dashboard'); // Adjust route if needed
       }
     } catch (err) {
       console.error('Login failed:', err);
@@ -64,7 +55,7 @@ function Login() {
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <input
-          type="text"
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
@@ -87,3 +78,4 @@ function Login() {
 }
 
 export default Login;
+
