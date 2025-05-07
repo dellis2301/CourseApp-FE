@@ -32,6 +32,8 @@ function App() {
           username: decoded.username,
           role: decoded.role,
         });
+        console.log("Logged in user:", decoded);
+
       } catch (err) {
         console.error('Invalid token:', err);
         localStorage.removeItem('token');
@@ -47,6 +49,8 @@ function App() {
           setCourses([]);
           return;
         }
+        
+        console.log("Fetching courses with token:", token);
 
         const res = await fetch(`${API_BASE}/api/courses`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -166,4 +170,5 @@ function App() {
 }
 
 export default App;
+
 
