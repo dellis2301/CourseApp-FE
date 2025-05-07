@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-function CourseList({ courses = [], onDelete }) {
+function CourseList({ courses = [], onDelete, isTeacher }) {
   // Handle cases where `courses` is not an array or fails to load properly
   const isLoggedOut = !Array.isArray(courses);
 
@@ -27,9 +27,14 @@ function CourseList({ courses = [], onDelete }) {
               <p><strong>Credits:</strong> {course?.credits}</p>
               <p><strong>Teacher:</strong> {course?.teacher}</p>
               <div className="course-actions">
-                <Link to={`/view-course/${course?._id}`} className="view-link">View Details</Link> | 
-                <Link to={`/edit-course/${course?._id}`} className="edit-link">Edit</Link> | 
-                <button onClick={() => onDelete(course?._id)} className="delete-btn">Delete</button>
+                <Link to={`/view-course/${course?._id}`} className="view-link">View Details</Link> 
+                
+                {isTeacher && (
+                  <>
+                    | <Link to={`/edit-course/${course?._id}`} className="edit-link">Edit</Link> 
+                    | <button onClick={() => onDelete(course?._id)} className="delete-btn">Delete</button>
+                  </>
+                )}
               </div>
             </li>
           ))}

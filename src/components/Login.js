@@ -16,6 +16,8 @@ function Login() {
     setError('');
 
     const loginData = { email, password };
+    console.log('Submitting login with:', loginData);
+
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/login`, {
