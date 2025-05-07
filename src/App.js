@@ -6,7 +6,7 @@ import ViewCourse from './components/ViewCourse';
 import EditCourse from './components/EditCourse';
 import Login from './components/Login';
 import Register from './components/Register';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute'; // Importing ProtectedRoute
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_API_BASE || "https://sky-pineapple-trumpet.glitch.me";
@@ -32,8 +32,6 @@ function App() {
           username: decoded.username,
           role: decoded.role,
         });
-        console.log("user:",);
-
       } catch (err) {
         console.error('Invalid token:', err);
         localStorage.removeItem('token');
@@ -49,8 +47,6 @@ function App() {
           setCourses([]);
           return;
         }
-        
-        console.log("Fetching courses with token:", token);
 
         const res = await fetch(`${API_BASE}/api/courses`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -154,21 +150,30 @@ function App() {
             />
           }
         />
-        {isAuthenticated() && isTeacher() && (
-          <>
-            <Route path="/add-course" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
-            <Route path="/edit-course/:id" element={<EditCourse onCourseUpdated={handleCourseUpdated} />} />
-          </>
-        )}
+
+        {/* Protecting Add Course and Edit Course routes for teachers */}
+        <Route
+          path="/add-course"
+          element={
+            <ProtectedRoute requiredRole="teacher" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
+          }
+        />
+        <Route
+          path="/edit-course/:id"
+          element={
+            <ProtectedRoute requiredRole="teacher" element={<EditCourse onCourseUpdated={handleCourseUpdated} />} />
+          }
+        />
+
         <Route path="/view-course/:id" element={<ViewCourse />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/protected" element={<ProtectedRoute />} />
       </Routes>
     </div>
   );
 }
 
 export default App;
+
 
 
