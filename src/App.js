@@ -14,19 +14,20 @@ const API_BASE = process.env.REACT_APP_API_BASE || "https://sky-pineapple-trumpe
 function App() {
   const [courses, setCourses] = useState([]);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);  // New state for loading
+  const [error, setError] = useState(null);      // New state for error
   const navigate = useNavigate();
 
-  // Load token and decode user info
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
         const decoded = JSON.parse(atob(token.split('.')[1]));
-        const isExpired = decoded.exp * 1000 < Date.now(); // Check token expiration
+        const isExpired = decoded.exp * 1000 < Date.now();
         if (isExpired) {
-          localStorage.removeItem('token'); // Remove expired token
-          setUser(null); // Reset user state
-          navigate('/login'); // Redirect to login
+          localStorage.removeItem('token');
+          setUser(null);
+          navigate('/login');
           return;
         }
         setUser({
@@ -40,40 +41,47 @@ function App() {
     }
   }, [navigate]);
 
-  // Fetch courses with the token in the headers
   useEffect(() => {
     const fetchCourses = async () => {
+      setLoading(true);    // Set loading to true when fetching starts
+      setError(null);      // Reset error state
+
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          setCourses([]); // No token, empty courses
+          setCourses([]);
+          setLoading(false);  // Set loading to false after the fetch completes
           return;
         }
+
         const res = await fetch(`${API_BASE}/api/courses`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) {
           const error = await res.json();
           console.warn('Course fetch failed:', error);
-          setCourses([]); // fallback to empty array
+          setCourses([]);
+          setLoading(false);  // Set loading to false after the fetch completes
+          setError('Failed to load courses');
           return;
         }
 
         const data = await res.json();
-        setCourses(Array.isArray(data) ? data : []); // Ensure data is an array
+        console.log('Fetched courses:', data);
+        setCourses(Array.isArray(data) ? data : []);
+        setLoading(false);  // Set loading to false after the fetch completes
       } catch (err) {
         console.error('Failed to fetch courses:', err);
         setCourses([]);
+        setLoading(false);  // Set loading to false after the fetch completes
+        setError('Error fetching courses');
       }
     };
 
     fetchCourses();
-  }, []);
+  }, []); // Empty dependency array means this runs once when the component mounts
 
-  // Handle course actions (create, update, delete)
   const handleCourseCreated = (newCourse) => {
     setCourses((prev) => [...prev, newCourse]);
     navigate('/');
@@ -114,29 +122,56 @@ function App() {
     }
   };
 
-  // Authentication helpers
-  const isAuthenticated = () => !!user;
-  const getUserRole = () => user?.role || null;
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     setUser(null);
     navigate('/');
   };
 
+  const isAuthenticated = () => !!user;
+  const isTeacher = () => user?.role === 'teacher';
+
   return (
     <div className="App">
       <nav>
         <ul>
-          <li><Link to="/">Home</Link></li>
-          {isAuthenticated() && <li><button onClick={handleLogout}>Logout</button></li>}
+          <li><Link to="/">Courses</Link></li>
+          {isAuthenticated() && isTeacher() && <li><Link to="/add-course">Add Course</Link></li>}
+          {!isAuthenticated() && (
+            <>
+              <li><Link to="/login">Login</Link></li>
+              <li><Link to="/register">Register</Link></li>
+            </>
+          )}
+          {isAuthenticated() && (
+            <li>
+              <button onClick={handleLogout}>Logout ({user.username})</button>
+            </li>
+          )}
         </ul>
       </nav>
+
+      {/* Display loading or error message */}
+      {loading && <p>Loading courses...</p>}
+      {error && <p>{error}</p>}
+
       <Routes>
-        <Route path="/" element={<CourseList courses={courses} onDelete={handleCourseDeleted} />} />
-        <Route path="/add-course" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
+        <Route
+          path="/"
+          element={
+            <CourseList
+              courses={courses}
+              onDelete={isTeacher() ? handleCourseDeleted : null}
+            />
+          }
+        />
+        {isAuthenticated() && isTeacher() && (
+          <>
+            <Route path="/add-course" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
+            <Route path="/edit-course/:id" element={<EditCourse onCourseUpdated={handleCourseUpdated} />} />
+          </>
+        )}
         <Route path="/view-course/:id" element={<ViewCourse />} />
-        <Route path="/edit-course/:id" element={<EditCourse onCourseUpdated={handleCourseUpdated} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/protected" element={<ProtectedRoute />} />
@@ -146,3 +181,4 @@ function App() {
 }
 
 export default App;
+
