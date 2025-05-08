@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-
 const API_BASE = "https://sky-pineapple-trumpet.glitch.me";
 
 function EditCourse() {
@@ -24,9 +23,11 @@ function EditCourse() {
         if (!response.ok) throw new Error('Course not found');
         const data = await response.json();
         setCourse(data);
+        console.log('Fetched course:', data); // Log fetched data
       } catch (error) {
+        console.error(error);
         setError(error.message);
-        navigate('/');
+        navigate('/'); // Redirect if the course is not found
       } finally {
         setLoading(false);
       }
@@ -38,12 +39,12 @@ function EditCourse() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const updatedCourse = {
-        ...course,
-        credits: Number(course.credits),
-      };
+    const updatedCourse = {
+      ...course,
+      credits: Number(course.credits), // Ensure credits are a number
+    };
 
+    try {
       const response = await fetch(`${API_BASE}/api/courses/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -52,8 +53,9 @@ function EditCourse() {
 
       if (!response.ok) throw new Error('Failed to update course');
 
-      navigate('/');
+      navigate('/'); // Navigate after updating the course
     } catch (error) {
+      console.error(error); // Log error for debugging
       setError('There was an error updating the course');
     }
   };

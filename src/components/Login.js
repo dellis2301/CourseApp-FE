@@ -18,7 +18,6 @@ function Login() {
     const loginData = { email, password };
     console.log('Submitting login with:', loginData);
 
-
     try {
       const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
@@ -53,9 +52,9 @@ function Login() {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="login-container">
+      <h2 className="login-title">Login</h2>
+      <form className="login-form" onSubmit={handleSubmit}>
         <input
           type="email"
           value={email}
@@ -71,7 +70,7 @@ function Login() {
           required
         />
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading}>
+        <button type="submit" className="form-btn" disabled={loading}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
@@ -80,4 +79,3 @@ function Login() {
 }
 
 export default Login;
-

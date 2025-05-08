@@ -20,13 +20,15 @@ export const getUserRole = () => {
 
   try {
     const decoded = JSON.parse(atob(token.split('.')[1]));
-    return decoded.role || null;
+    console.log('Decoded token:', decoded); // Optional for debugging
+    return decoded?.role || 'user';  // Use role directly
   } catch (err) {
-    console.error('Invalid token in getUserRole():', err);
+    console.error('Error decoding token in getUserRole():', err);
     return null;
   }
 };
 
+
+
 // Optional: check specifically for teacher role
 export const isTeacher = () => getUserRole() === 'teacher';
-

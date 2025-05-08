@@ -67,12 +67,13 @@ const Register = () => {
   };
 
   return (
-    <div>
-      <h1>Register</h1>
+    <div className="register-container">
+      <h2 className="register-title">Register</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {success && <p style={{ color: 'green' }}>{success}</p>}
-      <form onSubmit={onSubmit}>
+      <form className="register-form" onSubmit={onSubmit}>
         <input
+          className="form-input"
           type="text"
           name="username"
           placeholder="Username"
@@ -81,6 +82,7 @@ const Register = () => {
           required
         />
         <input
+          className="form-input"
           type="email"
           name="email"
           placeholder="Email"
@@ -89,6 +91,7 @@ const Register = () => {
           required
         />
         <input
+          className="form-input"
           type="password"
           name="password"
           placeholder="Password"
@@ -96,12 +99,18 @@ const Register = () => {
           onChange={handleChange}
           required
         />
-        <select name="role" value={formData.role} onChange={handleChange} required>
+        <select
+          className="form-input"
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          required
+        >
           <option value="student">Student</option>
           <option value="teacher">Teacher</option>
           <option value="admin">Admin</option>
         </select>
-        <button type="submit">Register</button>
+        <button type="submit" className="form-btn">Register</button>
       </form>
     </div>
   );
