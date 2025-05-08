@@ -6,7 +6,11 @@ import ViewCourse from './components/ViewCourse';
 import EditCourse from './components/EditCourse';
 import Login from './components/Login';
 import Register from './components/Register';
-import ProtectedRoute from './components/ProtectedRoute'; // Importing ProtectedRoute
+import ProtectedRoute from './components/ProtectedRoute';
+import { CartProvider } from './components/CartContext';
+import Cart from './components/Cart'; // Import the Cart component
+import MyCourses from './components/MyCourses'; // Add this import
+
 import './App.css';
 
 const API_BASE = process.env.REACT_APP_API_BASE || "https://sky-pineapple-trumpet.glitch.me";
@@ -120,60 +124,61 @@ function App() {
   const isTeacher = () => user?.role === 'teacher';
 
   return (
-    <div className="App">
-      <nav>
-        <ul>
-          <li><Link to="/">Courses</Link></li>
-          {isAuthenticated() && isTeacher() && <li><Link to="/add-course">Add Course</Link></li>}
-          {!isAuthenticated() && (
-            <>
-              <li><Link to="/login">Login</Link></li>
-              <li><Link to="/register">Register</Link></li>
-            </>
-          )}
-          {isAuthenticated() && (
-            <li>
-              <button onClick={handleLogout}>Logout ({user.username})</button>
-            </li>
-          )}
-        </ul>
-      </nav>
+    <CartProvider>
+      <div className="App">
+        <nav>
+          <ul>
+            <li><Link to="/">Courses</Link></li>
+            <li><Link to="/cart">View Cart</Link></li> {/* Link to Cart page */}
+            {isAuthenticated() && isTeacher() && <li><Link to="/add-course">Add Course</Link></li>}
+            {!isAuthenticated() && (
+              <>
+                <li><Link to="/login">Login</Link></li>
+                <li><Link to="/register">Register</Link></li>
+                <li><Link to="/my-courses">My Courses</Link></li>
+              </>
+            )}
+            {isAuthenticated() && (
+              <li>
+                <button onClick={handleLogout}>Logout ({user.username})</button>
+              </li>
+            )}
+          </ul>
+        </nav>
 
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <CourseList
-              courses={courses}
-              onDelete={isTeacher() ? handleCourseDeleted : null}
-              isTeacher={isTeacher()}  // Pass isTeacher prop to CourseList
-            />
-          }
-        />
-
-        {/* Protecting Add Course and Edit Course routes for teachers */}
-        <Route
-          path="/add-course"
-          element={
-            <ProtectedRoute requiredRole="teacher" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
-          }
-        />
-        <Route
-          path="/edit-course/:id"
-          element={
-            <ProtectedRoute requiredRole="teacher" element={<EditCourse onCourseUpdated={handleCourseUpdated} />} />
-          }
-        />
-
-        <Route path="/view-course/:id" element={<ViewCourse />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </div>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <CourseList
+                courses={courses}
+                onDelete={isTeacher() ? handleCourseDeleted : null}
+                isTeacher={isTeacher()}  
+              />
+            }
+          />
+          <Route
+            path="/add-course"
+            element={
+              <ProtectedRoute requiredRole="teacher" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
+            }
+          />
+          <Route
+            path="/edit-course/:id"
+            element={
+              <ProtectedRoute requiredRoles="teacher" element={<EditCourse onCourseUpdated={handleCourseUpdated} />} />
+            }
+          />
+          <Route path="/view-course/:id" element={<ViewCourse />} />
+          <Route path="/cart" element={<Cart />} /> {/* Cart route */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/my-courses" element={<MyCourses />} />
+        </Routes>
+      </div>
+    </CartProvider>
   );
 }
 
 export default App;
-
-
 
