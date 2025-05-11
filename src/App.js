@@ -43,6 +43,8 @@ function App() {
     }
   }, [navigate]);
 
+
+
   useEffect(() => {
     const fetchCourses = async () => {
       try {
