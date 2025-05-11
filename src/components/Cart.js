@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from './CartContext'; // Import the Cart context
 
 const Cart = () => {
-  const [cart, setCart] = useState([]);
+  const [userRole, setUserRole] = useState(null); // To store user role
+  const { cart, removeFromCart } = useCart(); // Using the Cart context
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch cart items from local storage or state
-    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-    setCart(cartItems);
+    // Get user role from localStorage
+    const storedRole = localStorage.getItem('role'); // Assuming role is stored in localStorage
+    setUserRole(storedRole);
   }, []);
 
+  // Ensure only students can access the cart
+  if (userRole !== 'student') {
+    return <p>You do not have access to the cart.</p>;
+  }
+
+  // Handle the checkout functionality
   const handleCheckout = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -46,18 +54,36 @@ const Cart = () => {
   };
 
   return (
-    <div>
-      <h1>Your Cart</h1>
-      <ul>
-        {cart.map(course => (
-          <li key={course._id}>
-            <span>{course.name}</span>
-          </li>
-        ))}
-      </ul>
-      <button onClick={handleCheckout}>Checkout</button>
+    <div className="cart-container">
+      <h1 className="cart-title">Your Cart</h1>
+
+      {cart.length === 0 ? (
+        <p>Your cart is empty!</p>
+      ) : (
+        <div className="cart-items">
+          {cart.map(course => (
+            <div className="cart-item" key={course._id}>
+              <span>{course.name}</span>
+              <div className="item-actions">
+                <button onClick={() => removeFromCart(course._id)}>
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="cart-footer">
+        {cart.length > 0 && (
+          <button className="checkout-btn" onClick={handleCheckout}>
+            Proceed to Checkout
+          </button>
+        )}
+      </div>
     </div>
   );
 };
 
 export default Cart;
+

@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from './CartContext'; // Import the useCart hook
 
 function CourseList({ courses = [], onDelete, isTeacher }) {
   const { addToCart, removeFromCart, isInCart } = useCart(); // Access cart functions
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const isLoggedOut = !Array.isArray(courses);
+  useEffect(() => {
+    if (!courses) {
+      setError('Failed to load courses.');
+      setLoading(false);
+    } else {
+      setLoading(false);
+    }
+  }, [courses]);
 
-  // Filter courses based on search input
   const filteredCourses = courses.filter((course) => {
     const term = searchTerm.toLowerCase();
     return (
@@ -16,7 +24,6 @@ function CourseList({ courses = [], onDelete, isTeacher }) {
       course?._id?.toLowerCase().includes(term)
     );
   });
-  console.log('Courses:', courses);
 
   return (
     <div className="course-list-container">
@@ -37,15 +44,18 @@ function CourseList({ courses = [], onDelete, isTeacher }) {
         }}
       />
 
-      {isLoggedOut && (
+      {loading && <p>Loading courses...</p>}
+      {error && <p>{error}</p>}
+
+      {!loading && !error && !Array.isArray(courses) && (
         <p>Error loading courses. Please make sure you're logged in.</p>
       )}
 
-      {!isLoggedOut && filteredCourses.length === 0 && (
+      {!loading && !error && filteredCourses.length === 0 && (
         <p>No matching courses found.</p>
       )}
 
-      {!isLoggedOut && filteredCourses.length > 0 && (
+      {!loading && !error && filteredCourses.length > 0 && (
         <ul className="course-list">
           {filteredCourses.map((course) => (
             <li key={course?._id} className="course-item">
@@ -55,7 +65,7 @@ function CourseList({ courses = [], onDelete, isTeacher }) {
               <p><strong>Credits:</strong> {course?.credits}</p>
               <p><strong>Teacher:</strong> {course?.teacher}</p>
               <div className="course-actions">
-                <Link to={`/view-course/${course?._id}`} className="view-link">View Details</Link> 
+                <Link to={`/view-course/${course?._id}`} className="view-link">View Details</Link>
 
                 {!isTeacher && (
                   <>

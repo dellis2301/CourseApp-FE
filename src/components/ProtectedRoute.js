@@ -6,7 +6,7 @@ const ProtectedRoute = ({ element, requiredRoles, ...rest }) => {
   const userRole = getUserRole(); // Get user role from the token
   
   console.log("User role:", userRole); // Add this for debugging
-  console.log("Required roles:", requiredRoles); // Add this for debugging
+  console.log("Required role:", requiredRoles); // Add this for debugging
 
   // If the user is not authenticated, redirect to login
   if (!userRole) {

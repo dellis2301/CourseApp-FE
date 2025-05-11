@@ -17,8 +17,9 @@ const MyCourses = () => {
 
       try {
         const res = await fetch('https://sky-pineapple-trumpet.glitch.me/api/courses/my-courses', {
+          method: 'GET',
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,  // Ensure the token is passed correctly
           },
         });
 
@@ -27,6 +28,7 @@ const MyCourses = () => {
           setError(errorData.message || 'Failed to fetch courses');
         } else {
           const data = await res.json();
+          console.log('Courses:', data);
           setMyCourses(data); // Assuming data is an array of courses
         }
       } catch (err) {
@@ -37,7 +39,7 @@ const MyCourses = () => {
     };
 
     fetchMyCourses();
-  }, []);
+  }, []);  // Empty dependency array to fetch courses on mount
 
   if (loading) {
     return <p>Loading your courses...</p>;
