@@ -126,25 +126,42 @@ function App() {
   return (
     <CartProvider>
       <div className="App">
-        <nav>
-          <ul>
-            <li><Link to="/">Courses</Link></li>
-            <li><Link to="/cart">View Cart</Link></li> {/* Link to Cart page */}
-            {isAuthenticated() && isTeacher() && <li><Link to="/add-course">Add Course</Link></li>}
-            {!isAuthenticated() && (
-              <>
-                <li><Link to="/login">Login</Link></li>
-                <li><Link to="/register">Register</Link></li>
-                <li><Link to="/my-courses">My Courses</Link></li>
-              </>
-            )}
-            {isAuthenticated() && (
-              <li>
-                <button onClick={handleLogout}>Logout ({user.username})</button>
-              </li>
-            )}
-          </ul>
-        </nav>
+      <nav>
+  <ul>
+    <li><Link to="/">Courses</Link></li>
+
+    {/* Display View Cart link only for students */}
+    {isAuthenticated() && user?.role === 'student' && (
+      <li><Link to="/cart">View Cart</Link></li>
+    )}
+
+    {/* Display My Courses link only for students */}
+    {isAuthenticated() && user?.role === 'student' && (
+      <li><Link to="/my-courses">My Courses</Link></li>
+    )}
+
+    {/* Display Add Course link only for teachers */}
+    {isAuthenticated() && isTeacher() && (
+      <li><Link to="/add-course">Add Course</Link></li>
+    )}
+
+    {/* Show login/register options if not authenticated */}
+    {!isAuthenticated() && (
+      <>
+        <li><Link to="/login">Login</Link></li>
+        <li><Link to="/register">Register</Link></li>
+      </>
+    )}
+
+    {/* Display Logout button if authenticated */}
+    {isAuthenticated() && (
+      <li>
+        <button onClick={handleLogout}>Logout ({user.username})</button>
+      </li>
+    )}
+  </ul>
+</nav>
+
 
         <Routes>
           <Route
@@ -160,7 +177,7 @@ function App() {
           <Route
             path="/add-course"
             element={
-              <ProtectedRoute requiredRole="teacher" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
+              <ProtectedRoute requiredRoles="teacher" element={<AddCourse onCourseCreated={handleCourseCreated} />} />
             }
           />
           <Route
@@ -169,11 +186,24 @@ function App() {
               <ProtectedRoute requiredRoles="teacher" element={<EditCourse onCourseUpdated={handleCourseUpdated} />} />
             }
           />
-          <Route path="/view-course/:id" element={<ViewCourse />} />
-          <Route path="/cart" element={<Cart />} /> {/* Cart route */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/my-courses" element={<MyCourses />} />
+          <Route 
+              path="/cart" 
+              element={
+              <ProtectedRoute requiredRoles="student" element={<Cart />} />
+             } 
+              />
+              <Route
+                path="/my-courses"
+                element={
+                <ProtectedRoute requiredRoles="student" element={<MyCourses />} />
+                  }
+                />
+
+              <Route path="/view-course/:id" element={<ViewCourse />} />
+        
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+             
         </Routes>
       </div>
     </CartProvider>
