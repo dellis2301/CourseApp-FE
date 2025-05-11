@@ -1,3 +1,4 @@
+
 // Helper function to check if the user is authenticated
 export const isAuthenticated = () => {
   const token = localStorage.getItem('token');
@@ -20,8 +21,8 @@ export const getUserRole = () => {
 
   try {
     const decoded = JSON.parse(atob(token.split('.')[1]));
-    console.log('Decoded token:', decoded); // Optional for debugging
-    return decoded?.role || 'user';  // Use role directly
+    console.log('Decoded token:', decoded); 
+    return decoded?.role || 'user';  
   } catch (err) {
     console.error('Error decoding token in getUserRole():', err);
     return null;
@@ -30,5 +31,5 @@ export const getUserRole = () => {
 
 
 
-// Optional: check specifically for teacher role
+
 export const isTeacher = () => getUserRole() === 'teacher';

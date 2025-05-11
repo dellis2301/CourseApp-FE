@@ -41,7 +41,7 @@ function Login() {
       if (userRole === 'teacher') {
         navigate('/');
       } else if (userRole === 'student') {
-        navigate('/student-dashboard'); // Adjust route if needed
+        navigate('/'); 
       }
     } catch (err) {
       console.error('Login failed:', err);
